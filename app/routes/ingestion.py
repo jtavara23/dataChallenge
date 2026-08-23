@@ -27,7 +27,7 @@ def ingest_departments(records: list[dict], db: Session = Depends(get_db)):
     inserted = 0
     errors = []
 
-    for i, raw in enumerate(records):
+    for i, raw in enumerate(records, start=1):
         try:
             row = DepartmentCreate(**raw)
         except ValidationError as e:
@@ -38,7 +38,9 @@ def ingest_departments(records: list[dict], db: Session = Depends(get_db)):
 
         existing = db.query(Department).filter_by(id=row.id).first()
         if existing:
-            errors.append(RowError(row=i, reasons=[f"id {row.id} already exists"]))
+            reasons = [f"id {row.id} already exists"]
+            log_invalid_record("departments", i, raw, reasons)
+            errors.append(RowError(row=i, reasons=reasons))
             continue
 
         db.add(Department(id=row.id, department=row.department))
@@ -56,7 +58,7 @@ def ingest_jobs(records: list[dict], db: Session = Depends(get_db)):
     inserted = 0
     errors = []
 
-    for i, raw in enumerate(records):
+    for i, raw in enumerate(records, start=1):
         try:
             row = JobCreate(**raw)
         except ValidationError as e:
@@ -67,7 +69,9 @@ def ingest_jobs(records: list[dict], db: Session = Depends(get_db)):
 
         existing = db.query(Job).filter_by(id=row.id).first()
         if existing:
-            errors.append(RowError(row=i, reasons=[f"id {row.id} already exists"]))
+            reasons = [f"id {row.id} already exists"]
+            log_invalid_record("jobs", i, raw, reasons)
+            errors.append(RowError(row=i, reasons=reasons))
             continue
 
         db.add(Job(id=row.id, job=row.job))
@@ -88,7 +92,7 @@ def ingest_hired_employees(records: list[dict], db: Session = Depends(get_db)):
     inserted = 0
     errors = []
 
-    for i, raw in enumerate(records):
+    for i, raw in enumerate(records, start=1):
         try:
             row = HiredEmployeeCreate(**raw)
         except ValidationError as e:
@@ -110,7 +114,9 @@ def ingest_hired_employees(records: list[dict], db: Session = Depends(get_db)):
 
         existing = db.query(HiredEmployee).filter_by(id=row.id).first()
         if existing:
-            errors.append(RowError(row=i, reasons=[f"id {row.id} already exists"]))
+            reasons = [f"id {row.id} already exists"]
+            log_invalid_record("hired_employees", i, raw, reasons)
+            errors.append(RowError(row=i, reasons=reasons))
             continue
 
         db.add(HiredEmployee(

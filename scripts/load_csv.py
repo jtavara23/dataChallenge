@@ -1,7 +1,7 @@
 """
 Historical Data Migration Script
 Loads CSV files into the SQLite database with validation.
-Invalid records are logged to logs/invalid_records.log.
+Invalid records are logged to logs/migration/<run_id>/<table>.log
 
 Usage:
     cd data-challenge
@@ -10,8 +10,6 @@ Usage:
 """
 
 import csv
-import json
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,28 +21,11 @@ from sqlalchemy.orm import sessionmaker
 from app.config import DATABASE_URL
 from app.database import Base
 from app.models import Department, Job, HiredEmployee
+from app.logger import log_invalid_record
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
-LOG_FILE = LOG_DIR / "invalid_records.log"
 
-
-def setup_logging():
-    LOG_DIR.mkdir(exist_ok=True)
-    if LOG_FILE.exists():
-        LOG_FILE.unlink()
-
-
-def log_invalid(table: str, row_num: int, raw_data: list, reasons: list[str]):
-    entry = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "table": table,
-        "row": row_num,
-        "data": raw_data,
-        "reasons": reasons,
-    }
-    with open(LOG_FILE, "a") as f:
-        f.write(json.dumps(entry) + "\n")
+RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M%S")
 
 
 def validate_iso_datetime(value: str) -> bool:
@@ -53,6 +34,10 @@ def validate_iso_datetime(value: str) -> bool:
         return True
     except (ValueError, AttributeError, TypeError):
         return False
+
+
+def log(table, row_num, data, reasons):
+    log_invalid_record(table, row_num, data, reasons, source="migration", run_id=RUN_ID)
 
 
 def load_departments(session):
@@ -75,7 +60,7 @@ def load_departments(session):
                     reasons.append("department is required")
 
             if reasons:
-                log_invalid("departments", row_num, row, reasons)
+                log("departments", row_num, row, reasons)
                 skipped += 1
                 continue
 
@@ -109,7 +94,7 @@ def load_jobs(session):
                     reasons.append("job is required")
 
             if reasons:
-                log_invalid("jobs", row_num, row, reasons)
+                log("jobs", row_num, row, reasons)
                 skipped += 1
                 continue
 
@@ -138,7 +123,7 @@ def load_hired_employees(session):
 
             if len(row) < 5:
                 reasons.append("insufficient columns")
-                log_invalid("hired_employees", row_num, row, reasons)
+                log("hired_employees", row_num, row, reasons)
                 skipped += 1
                 continue
 
@@ -162,7 +147,7 @@ def load_hired_employees(session):
                 reasons.append(f"job_id {job_id} not found in jobs")
 
             if reasons:
-                log_invalid("hired_employees", row_num, row, reasons)
+                log("hired_employees", row_num, row, reasons)
                 skipped += 1
                 continue
 
@@ -183,20 +168,18 @@ def load_hired_employees(session):
 
 
 def main():
-    print("Starting historical data migration...")
+    print(f"Starting historical data migration (run: {RUN_ID})...")
 
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    setup_logging()
-
     try:
         load_departments(session)
         load_jobs(session)
         load_hired_employees(session)
-        print(f"\nDone. Invalid records logged to: {LOG_FILE}")
+        print(f"\nDone. Invalid records logged to: logs/migration/{RUN_ID}/")
     finally:
         session.close()
 

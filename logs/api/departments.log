@@ -1,0 +1,1 @@
+{"timestamp": "2026-08-23T23:18:43.564151+00:00", "table": "departments", "row": 0, "data": {"id": 100, "department": ""}, "reasons": ["Value error, department is required"]}
