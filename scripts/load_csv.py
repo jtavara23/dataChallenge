@@ -58,6 +58,7 @@ def validate_iso_datetime(value: str) -> bool:
 def load_departments(session):
     filepath = DATA_DIR / "departments.csv"
     loaded, skipped = 0, 0
+    existing_ids = {d.id for d in session.query(Department.id).all()}
 
     with open(filepath, "r") as f:
         reader = csv.reader(f)
@@ -78,8 +79,7 @@ def load_departments(session):
                 skipped += 1
                 continue
 
-            existing = session.query(Department).filter_by(id=int(id_val)).first()
-            if existing:
+            if int(id_val) in existing_ids:
                 continue
 
             session.add(Department(id=int(id_val), department=dept_name.strip()))
@@ -92,6 +92,7 @@ def load_departments(session):
 def load_jobs(session):
     filepath = DATA_DIR / "jobs.csv"
     loaded, skipped = 0, 0
+    existing_ids = {j.id for j in session.query(Job.id).all()}
 
     with open(filepath, "r") as f:
         reader = csv.reader(f)
@@ -112,8 +113,7 @@ def load_jobs(session):
                 skipped += 1
                 continue
 
-            existing = session.query(Job).filter_by(id=int(id_val)).first()
-            if existing:
+            if int(id_val) in existing_ids:
                 continue
 
             session.add(Job(id=int(id_val), job=job_name.strip()))
@@ -127,6 +127,7 @@ def load_hired_employees(session):
     filepath = DATA_DIR / "hired_employees.csv"
     loaded, skipped = 0, 0
 
+    existing_ids = {e.id for e in session.query(HiredEmployee.id).all()}
     valid_dept_ids = {d.id for d in session.query(Department.id).all()}
     valid_job_ids = {j.id for j in session.query(Job.id).all()}
 
@@ -165,8 +166,7 @@ def load_hired_employees(session):
                 skipped += 1
                 continue
 
-            existing = session.query(HiredEmployee).filter_by(id=int(id_val)).first()
-            if existing:
+            if int(id_val) in existing_ids:
                 continue
 
             session.add(HiredEmployee(
