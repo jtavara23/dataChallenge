@@ -20,7 +20,8 @@ def employees_hired_by_quarter(db: Session = Depends(get_db)):
         FROM hired_employees he
         JOIN departments d ON he.department_id = d.id
         JOIN jobs j ON he.job_id = j.id
-        WHERE strftime('%Y', he.datetime) = '2021'
+        WHERE he.datetime >= '2021-01-01T00:00:00Z'
+          AND he.datetime < '2022-01-01T00:00:00Z'
         GROUP BY d.department, j.job
         ORDER BY d.department, j.job
     """)
@@ -42,20 +43,27 @@ def employees_hired_by_quarter(db: Session = Depends(get_db)):
 @router.get("/departments-above-average")
 def departments_above_average_hiring(db: Session = Depends(get_db)):
     query = text("""
+        WITH dept_hires AS (
+            SELECT
+                department_id,
+                COUNT(*) AS hired
+            FROM hired_employees
+            WHERE datetime >= '2021-01-01T00:00:00Z'
+              AND datetime < '2022-01-01T00:00:00Z'
+            GROUP BY department_id
+        ),
+        avg_hires AS (
+            SELECT AVG(hired) AS avg_hired FROM dept_hires
+        )
         SELECT
             d.id,
             d.department,
-            COUNT(he.id) AS hired
-        FROM hired_employees he
-        JOIN departments d ON he.department_id = d.id
-        WHERE strftime('%Y', he.datetime) = '2021'
-        GROUP BY d.id, d.department
-        HAVING COUNT(he.id) > (
-            SELECT CAST(COUNT(*) AS FLOAT) / COUNT(DISTINCT department_id)
-            FROM hired_employees
-            WHERE strftime('%Y', datetime) = '2021'
-        )
-        ORDER BY hired DESC
+            dh.hired
+        FROM dept_hires dh
+        JOIN departments d ON dh.department_id = d.id
+        CROSS JOIN avg_hires
+        WHERE dh.hired > avg_hires.avg_hired
+        ORDER BY dh.hired DESC
     """)
 
     results = db.execute(query).fetchall()
