@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.database import engine, Base
+import app.models  # noqa: F401 — registers models with Base.metadata
 from app.routes import ingestion, analytics, backup
 
 Base.metadata.create_all(bind=engine)
