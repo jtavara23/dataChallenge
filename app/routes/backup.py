@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from pathlib import Path
-import fastavro
+try:
+    import fastavro
+except ImportError:
+    fastavro = None
 
 from app.database import get_db
 from app.auth import verify_api_key
@@ -57,6 +60,8 @@ TABLE_COLUMNS = {
 
 @router.post("/backup/{table_name}")
 def backup_table(table_name: str, db: Session = Depends(get_db)):
+    if fastavro is None:
+        raise HTTPException(status_code=503, detail="fastavro not installed")
     if table_name not in TABLE_MODELS:
         raise HTTPException(status_code=404, detail=f"Table '{table_name}' not found. Valid: {list(TABLE_MODELS.keys())}")
 
@@ -85,6 +90,8 @@ def backup_table(table_name: str, db: Session = Depends(get_db)):
 
 @router.post("/restore/{table_name}")
 def restore_table(table_name: str, db: Session = Depends(get_db)):
+    if fastavro is None:
+        raise HTTPException(status_code=503, detail="fastavro not installed")
     if table_name not in TABLE_MODELS:
         raise HTTPException(status_code=404, detail=f"Table '{table_name}' not found. Valid: {list(TABLE_MODELS.keys())}")
 
