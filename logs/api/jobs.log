@@ -1,0 +1,2 @@
+{"timestamp": "2026-08-24T03:05:58.067218+00:00", "table": "jobs", "row": 1, "data": {"id": 1, "job": "  "}, "reasons": ["Value error, job is required"]}
+{"timestamp": "2026-08-24T03:06:09.356972+00:00", "table": "jobs", "row": 1, "data": {"id": 1, "job": "  "}, "reasons": ["Value error, job is required"]}

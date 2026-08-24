@@ -181,3 +181,19 @@ uvicorn app.main:app --port 8000 --reload
 ```
 
 > **Note**: `fastavro` requires Python ≤3.12 for local wheel builds. Use Docker for full functionality including backup/restore.
+
+## Tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+**29 tests** passing across 3 test files:
+
+| File | Tests | Covers |
+|------|-------|--------|
+| `test_schemas.py` | 10 | ISO 8601 validation, required fields |
+| `test_ingestion.py` | 12 | Auth (missing/invalid key), batch insert, duplicates, FK checks, batch size limit |
+| `test_analytics.py` | 7 | Quarter assignment, above-average logic, ordering, empty DB |
+
+Tests use an isolated SQLite database (created/dropped per test) — no interference with production data.

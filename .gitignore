@@ -3,8 +3,6 @@ __pycache__/
 *$py.class
 *.db
 .env
-backups/*.avro
-logs/*.log
 .venv/
 venv/
 *.egg-info/

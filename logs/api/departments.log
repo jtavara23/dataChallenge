@@ -1,1 +1,6 @@
-{"timestamp": "2026-08-23T23:18:43.564151+00:00", "table": "departments", "row": 0, "data": {"id": 100, "department": ""}, "reasons": ["Value error, department is required"]}
+{"timestamp": "2026-08-24T03:05:58.031126+00:00", "table": "departments", "row": 1, "data": {"id": 1, "department": "Marketing"}, "reasons": ["id 1 already exists"]}
+{"timestamp": "2026-08-24T03:05:58.040695+00:00", "table": "departments", "row": 1, "data": {"id": 1, "department": ""}, "reasons": ["Value error, department is required"]}
+{"timestamp": "2026-08-24T03:05:58.049775+00:00", "table": "departments", "row": 2, "data": {"id": 2, "department": ""}, "reasons": ["Value error, department is required"]}
+{"timestamp": "2026-08-24T03:06:09.324924+00:00", "table": "departments", "row": 1, "data": {"id": 1, "department": "Marketing"}, "reasons": ["id 1 already exists"]}
+{"timestamp": "2026-08-24T03:06:09.332606+00:00", "table": "departments", "row": 1, "data": {"id": 1, "department": ""}, "reasons": ["Value error, department is required"]}
+{"timestamp": "2026-08-24T03:06:09.340513+00:00", "table": "departments", "row": 2, "data": {"id": 2, "department": ""}, "reasons": ["Value error, department is required"]}
